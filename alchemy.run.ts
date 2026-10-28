@@ -382,9 +382,12 @@ export default Alchemy.Stack(
       // CPU allowance the app worker used to carry for them. Configurable
       // CPU limits are a paid-plan feature; self-host deploys
       // (cloudflare_access) may run on the free plan, which rejects them.
-      ...(authMode === "cloudflare_access"
-        ? {}
-        : { limits: { cpuMs: 300_000 } }),
+      // Subrequests are set explicitly: this account is on Workers Paid, and
+      // the audit workflow needs far more than the free-plan ceiling of 50.
+      limits: {
+        subrequests: 1000,
+        ...(authMode === "cloudflare_access" ? {} : { cpuMs: 300_000 }),
+      },
       observability: {
         enabled: wrangler.observability?.enabled ?? true,
         traces: { enabled: wrangler.observability?.traces?.enabled ?? false },
